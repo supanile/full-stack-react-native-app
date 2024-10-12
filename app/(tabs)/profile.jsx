@@ -1,45 +1,39 @@
-import { router } from "expo-router";
+import { View, Text, FlatList, TouchableOpacity, Image } from "react-native";
+import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Image, FlatList, TouchableOpacity } from "react-native";
-
-import { icons } from "../../constants";
-import useAppwrite from "../../lib/useAppwrite";
-import { getUserPosts, signOut } from "../../lib/appwrite";
 import { useGlobalContext } from "../../context/GlobalProvider";
-import { EmptyState, InfoBox, VideoCard } from "../../components";
+
+import InfoBox from "../../components/InfoBox";
+import EmptyState from "../../components/EmptyState";
+import VideoCard from "../../components/VideoCard";
+import useAppwrite from "../../lib/useAppwrite";
+import { getUserPosts } from "../../lib/appwrite";
+import { icons } from "../../constants";
 
 const Profile = () => {
-  const { user, setUser, setIsLogged } = useGlobalContext();
+  const { user, setUser, setIsLoggerIn } = useGlobalContext();
   const { data: posts } = useAppwrite(() => getUserPosts(user.$id));
 
-  const logout = async () => {
-    await signOut();
-    setUser(null);
-    setIsLogged(false);
-
-    router.replace("/sign-in");
+  const logout = () => {
+    // Implement logout functionality here
   };
+
+  const renderVideoCard = ({ item }) => (
+    <VideoCard
+      title={item.title}
+      creator={item.creator.username}
+      avatar={item.creator.avatar}
+      thumbnail={item.thumbnail}
+      video={item.video}
+    />
+  );
 
   return (
     <SafeAreaView className="bg-primary h-full">
       <FlatList
         data={posts}
         keyExtractor={(item) => item.$id}
-        renderItem={({ item }) => (
-          <VideoCard
-            title={item.title}
-            thumbnail={item.thumbnail}
-            video={item.video}
-            creator={item.creator.username}
-            avatar={item.creator.avatar}
-          />
-        )}
-        ListEmptyComponent={() => (
-          <EmptyState
-            title="No Videos Found"
-            subtitle="No videos found for this profile"
-          />
-        )}
+        renderItem={renderVideoCard}
         ListHeaderComponent={() => (
           <View className="w-full flex justify-center items-center mt-6 mb-12 px-4">
             <TouchableOpacity
@@ -69,18 +63,24 @@ const Profile = () => {
 
             <View className="mt-5 flex flex-row">
               <InfoBox
-                title={posts.length || 0}
+                title={posts?.length || 0}
                 subtitle="Posts"
                 titleStyles="text-xl"
                 containerStyles="mr-10"
               />
               <InfoBox
-                title="1.2k"
+                title="150k"
                 subtitle="Followers"
                 titleStyles="text-xl"
               />
             </View>
           </View>
+        )}
+        ListEmptyComponent={() => (
+          <EmptyState
+            title="No Videos Found"
+            subtitle="You haven't uploaded any videos yet"
+          />
         )}
       />
     </SafeAreaView>
